@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SciCalc Studio — All-in-One Science Lab Calculator Suite</title>
+  <style>
+    /* CSS Reset & Design Tokens */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-input: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-hover: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      --border: #e2e8f0;
+      --border-focus: #6366f1;
+      
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --primary-text: #4338ca;
+
+      --accent-cyan: #0891b2;
+      --accent-cyan-light: #ecfeff;
+      --accent-purple: #9333ea;
+      --accent-purple-light: #faf5ff;
+      --accent-emerald: #059669;
+      --accent-emerald-light: #ecfdf5;
+      --accent-rose: #e11d48;
+      --accent-rose-light: #fff1f2;
+      --accent-amber: #d97706;
+      --accent-amber-light: #fffbeb;
+
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+    }
+
+    html.dark {
+      --bg-page: #090d16;
+      --bg-card: #111827;
+      --bg-input: #1f2937;
+      --bg-subtle: #1e293b;
+      --bg-hover: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --border: #1f293d;
+      --border-focus: #818cf8;
+      
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: rgba(99, 102, 241, 0.15);
+      --primary-text: #a5b4fc;
+
+      --accent-cyan: #06b6d4;
+      --accent-cyan-light: rgba(6, 182, 212, 0.15);
+      --accent-purple: #c084fc;
+      --accent-purple-light: rgba(192, 132, 252, 0.15);
+      --accent-emerald: #10b981;
+      --accent-emerald-light: rgba(16, 185, 129, 0.15);
+      --accent-rose: #f43f5e;
+      --accent-rose-light: rgba(244, 63, 94, 0.15);
+      --accent-amber: #fbbf24;
+      --accent-amber-light: rgba(251, 191, 36, 0.15);
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    /* Layout */
+    .container {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    @media (min-width: 640px) { .container { padding: 0 1.5rem; } }
+    @media (min-width: 1024px) { .container { padding: 0 2rem; } }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 4rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .brand-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+    }
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(to right, #4f46e5, #0891b2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    html.dark .brand-title {
+      background: linear-gradient(to right, #818cf8, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-full);
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* Nav Tabs */
+    .nav-tabs-wrapper {
+      background: var(--bg-subtle);
+      border-top: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-tabs-wrapper::-webkit-scrollbar { display: none; }
+    .nav-tabs {
+      display: flex;
+      gap: 0.35rem;
+      padding: 0.5rem 0;
+      white-space: nowrap;
+    }
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.825rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-main);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Hero Banner */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+      color: #ffffff;
+      padding: 2.25rem 2rem;
+      margin: 1.5rem 0;
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.75rem;
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(165, 180, 252, 0.3);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #c7d2fe;
+      margin-bottom: 0.75rem;
+    }
+    .hero-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+    .hero-desc {
+      font-size: 0.925rem;
+      color: #cbd5e1;
+      max-width: 48rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .hero-link {
+      padding: 0.35rem 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #ffffff;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .hero-link:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Calculator Cards */
+    .calc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .card-icon {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Sub Tabs inside Tools */
+    .sub-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      background: var(--bg-subtle);
+      padding: 0.35rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1.5rem;
+    }
+    .sub-tab-btn {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .sub-tab-btn.active {
+      background: var(--bg-card);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Grid Layouts */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (min-width: 1024px) {
+      .grid-2col { grid-template-columns: 1.1fr 0.9fr; }
+    }
+
+    /* Form Inputs */
+    .input-group {
+      margin-bottom: 1.1rem;
+    }
+    .input-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.35rem;
+    }
+    .input-row {
+      display: flex;
+      width: 100%;
+    }
+    input[type="number"], input[type="text"], select, textarea {
+      font-family: inherit;
+      width: 100%;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.875rem;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input[type="number"]:focus, input[type="text"]:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+    .input-row input {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right: none;
+    }
+    .input-row select {
+      width: auto;
+      min-width: 110px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      background-color: var(--bg-subtle);
+      font-weight: 600;
+      font-size: 0.775rem;
+    }
+
+    /* Result Panel */
+    .result-box {
+      background: linear-gradient(135deg, var(--primary-light), var(--bg-subtle));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .result-card-inner {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .result-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .result-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      font-family: var(--font-mono);
+      letter-spacing: -0.025em;
+    }
+    .result-formula {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
+      font-size: 0.775rem;
+      color: var(--text-muted);
+    }
+    .result-formula code {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--primary);
+      display: block;
+      margin-top: 0.25rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    
+    .btn-coffee {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff !important;
+      border: 1px solid #d97706;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-coffee:hover {
+      background: linear-gradient(135deg, #fbbf24, #d97706);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+      color: #ffffff !important;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      background: var(--bg-card);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background: var(--bg-subtle);
+    }
+    .btn-sm {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+    }
+
+    /* Data Tables */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.8rem;
+    }
+    th {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      font-weight: 700;
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+    td {
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--bg-subtle); }
+    .font-mono { font-family: var(--font-mono); }
+
+    /* Instructions & Callouts */
+    .callout {
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      margin-top: 0.75rem;
+    }
+    .callout-success {
+      background: var(--accent-emerald-light);
+      border: 1px solid var(--accent-emerald);
+      color: #065f46;
+    }
+    html.dark .callout-success { color: #a7f3d0; }
+    .callout-warning {
+      background: var(--accent-amber-light);
+      border: 1px solid var(--accent-amber);
+      color: #92400e;
+    }
+    html.dark .callout-warning { color: #fde68a; }
+
+    /* SVGs */
+    svg.icon {
+      width: 1.15rem;
+      height: 1.15rem;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Plate Visualizer */
+    .plate-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      gap: 0.5rem;
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      margin-top: 1rem;
+    }
+    .well-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #1e293b;
+      padding: 0.5rem 0.25rem;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      font-size: 0.7rem;
+      color: #cbd5e1;
+    }
+    .well-circle {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      border: 2px solid #06b6d4;
+      margin: 0.25rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Volume Stepper Control */
+    .vol-control-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.25rem;
+    }
+    .vol-step-btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .vol-step-btn:hover {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+    .vol-display-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-full);
+      background: var(--accent-cyan-light);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .vol-presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .vol-preset-chip {
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .vol-preset-chip:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+    .vol-preset-chip.active {
+      background: var(--accent-cyan);
+      color: #ffffff;
+      border-color: var(--accent-cyan);
+    }
+
+    /* Print styling */
+    @media print {
+      header, .nav-tabs-wrapper, .hero, .btn, .no-print { display: none !important; }
+      body { background: #fff !important; color: #000 !important; }
+      .calc-card { border: 1px solid #ccc !important; box-shadow: none !important; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="container header-content">
+      <div class="brand" onclick="showTab('all')">
+        <div class="brand-icon">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M10 2v7.31L4.35 18.5A2 2 0 0 0 6.09 21h11.82a2 2 0 0 0 1.74-2.5L14 9.31V2"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 0 0-4 0"/><path d="M5.52 16h12.96"/></svg>
+        </div>
+        <div>
+          <span class="brand-title">SciCalc Studio</span>
+          <span class="brand-badge">Lab Suite</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <button class="btn btn-coffee btn-sm" onclick="showTab('coffee')" title="Buy Me a Coffee & Support SciCalc Studio">
+          <svg class="icon" viewBox="0 0 24 24" style="color: #ffffff;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          <span>Buy Me a Coffee</span>
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs-wrapper no-print">
+      <div class="container">
+        <nav class="nav-tabs">
+          <button class="tab-btn active" id="tab-all" onclick="showTab('all')">All-in-One Workbench</button>
+          <button class="tab-btn" id="tab-molarity" onclick="showTab('molarity')">Molarity & Solutions</button>
+          <button class="tab-btn" id="tab-moles" onclick="showTab('moles')">Moles ⇄ Grams</button>
+          <button class="tab-btn" id="tab-ecanything" onclick="showTab('ecanything')">ECanything & Hill Plot</button>
+          <button class="tab-btn" id="tab-dilution" onclick="showTab('dilution')">Dilutions & Serial Matrix</button>
+          <button class="tab-btn" id="tab-invivo" onclick="showTab('invivo')">In Vivo Animal Dosing</button>
+          <button class="tab-btn" id="tab-mw" onclick="showTab('mw')">Formula & Reagent MW</button>
+          <button class="tab-btn" id="tab-buffers" onclick="showTab('buffers')">Buffer Recipe Book</button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container" style="flex: 1; padding-top: 1.5rem; padding-bottom: 3rem;">
+    
+    <!-- Hero Banner (All Tools View) -->
+    <div class="hero no-print" id="hero-banner">
+      <div class="hero-badge">⚡ Complete Laboratory Calculation Platform</div>
+      <h1 class="hero-title">Precision Science Research & Formulation Workbench</h1>
+      <p class="hero-desc">
+        Integrated suite for molecular biology, chemistry, and pharmacology research labs. Calculate solution molarities, mole-to-gram conversions, dose-response Hill slopes, multi-step serial dilutions, in vivo animal dosing protocols, and scalable buffer recipes.
+      </p>
+      <div class="hero-links">
+        <a href="#section-molarity" class="hero-link">🧪 Molarity & Solutions</a>
+        <a href="#section-moles" class="hero-link">⚖️ Moles ⇄ Grams</a>
+        <a href="#section-ecanything" class="hero-link">📈 ECanything Curve</a>
+        <a href="#section-dilution" class="hero-link">💧 Dilutions & Plates</a>
+        <a href="#section-invivo" class="hero-link">🐁 In Vivo Formulation</a>
+        <a href="#section-mw" class="hero-link">⚛️ Chemical Formula MW</a>
+        <a href="#section-buffers" class="hero-link">🥣 Buffer Recipes</a>
+        <a href="javascript:void(0)" onclick="showTab('coffee')" class="hero-link" style="background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.4); color: #fde68a;">☕ Buy Me a Coffee</a>
+      </div>
+    </div>
+
+    <!-- ================= 1. MOLARITY SUITE ================= -->
+    <section class="calc-card" id="section-molarity">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-icon" style="background: var(--primary-light); color: var(--primary);">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M10 2v7.31L4.35 18.5A2 2 0 0 0 6.09 21h11.82a2 2 0 0 0 1.74-2.5L14 9.31V2"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 0 0-4 0"/><path d="M5.52 16h12.96"/></svg>
+          </div>
+          <div>
+            <h2 class="card-title">Molarity & Solution Preparation Suite</h2>
+            <p class="card-subtitle">Calculate mass, volume, molarity, and stock dilutions with multi-unit support</p>
+          </div>
+        </div>
+        <div>
+          <select id="quick-reagent-select" onchange="applyQuickReagent(this.value)" style="width: auto; font-size: 0.775rem;">
+            <option value="">⚡ Quick Reagent MW Preset...</option>
+            <option value="58.44">Sodium Chloride (NaCl) - 58.44</option>
+            <option value="180.16">D-Glucose (C6H12O6) - 180.16</option>
+            <option value="121.14">Tris Base - 121.14</option>
+            <option value="157.60">Tris-HCl - 157.60</option>
+            <option value="372.24">EDTA Disodium 2H2O - 372.24</option>
+            <option value="288.38">SDS - 288.38</option>
+            <option value="154.25">DTT - 154.25</option>
+            <option value="78.13">DMSO - 78.13</option>
+            <option value="349.41">Ampicillin - 349.41</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Sub Tabs -->
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" id="m-tab-1" onclick="switchMolaritySubTab(1)">1. Mass from Vol & Conc</button>
+        <button class="sub-tab-btn" id="m-tab-2" onclick="switchMolaritySubTab(2)">2. Volume from Mass & Conc</button>
+        <button class="sub-tab-btn" id="m-tab-3" onclick="switchMolaritySubTab(3)">3. Molarity from Mass & Vol</button>
+        <button class="sub-tab-btn" id="m-tab-4" onclick="switchMolaritySubTab(4)">4. Dilute Stock (C₁V₁=C₂V₂)</button>
+      </div>
+
+      <!-- Sub Tool 1: Mass from Vol & Conc -->
+      <div id="m-pane-1" class="grid-2col">
+        <div>
+          <div class="input-group">
+            <label class="input-label">Target Concentration:</label>
+            <div class="input-row">
+              <input type="number" step="any" id="m1-conc" value="10" oninput="calcMolarityMass()">
+              <select id="m1-conc-unit" onchange="calcMolarityMass()">
+                <option value="1e-3">mM (millimolar)</option>
+                <option value="1">M (molar)</option>
+                <option value="1e-6">μM (micromolar)</option>
+                <option value="1e-9">nM (nanomolar)</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Formula Weight / Molecular Weight (g/mol):</label>
+            <input type="number" step="any" id="m1-mw" value="58.44" oninput="calcMolarityMass()">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Desired Volume:</label>
+            <div class="input-row">
+              <input type="number" step="any" id="m1-vol" value="500" oninput="calcMolarityMass()">
+              <select id="m1-vol-unit" onchange="calcMolarityMass()">
+                <option value="1e-3">mL (milliliter)</option>
+                <option value="1">L (liter)</option>
+                <option value="1e-6">μL (microliter)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="result-card-inner">
+            <div class="result-title">Mass of Solute Needed</div>
+            <div class="result-value" id="m1-result">0.2922 g</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;" id="m1-subresult">(= 292.2 mg)</div>
+          </div>
+          <div class="result-formula">
+            Formula: Mass (g) = Concentration (M) × Volume (L) × MW (g/mol)
+            <code id="m1-breakdown">0.01 M × 0.5 L × 58.44 g/mol = 0.2922 g</code>
+          </div>
+          <button class="btn btn-outline" onclick="copyText('m1-result')">Copy Mass Result</button>
+        </div>
+      </div>
+
+      <!-- Sub Tool 2: Volume from Mass & Conc -->
+      <div id="m-pane-2" class="grid-2col" style="display: none;">
+        <div>
+          <div class="input-group">
+            <label class="input-label">Mass of Solute:</label>
+            <div class="input-row">
+              <input type="number" step="any" id="m2-mass" value="100" oninput="calcMolarityVol()">
+              <select id="m2-mass-unit" onchange="calcMolarityVol()">
+                <option value="1e-3">mg (milligram)</option>
+                <option value="1">g (gram)</option>
+                <option value="1e-6">μg (microgram)</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Formula Weight (g/mol):</label>
+            <input type="number" step="any" id="m2-mw" value="180.16" oninput="calcMolarityVol()">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Desired Concentration:</label>
+            <div class="input-row">
+              <input type="number" step="any" id="m2-conc" value="50" oninput="calcMolarityVol()">
+              <select id="m2-conc-unit" onchange="calcMolarityVol()">
+                <option value="1e-6">μM (micromolar)</option>
+                <option value="1e-3">mM (millimolar)</option>
+                <option value="1">M (molar)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="result-card-inner">
+            <div class="result-title">Required Solvent Volume</div>
+            <div class="result-value" id="m2-result">11.10 mL</div>
+          </div>
+          <div class="result-formula">
+            Formula: Volume (L) = Mass (g) ÷ [ Concentration (M) × MW (g/mol) ]
+          </div>
+          <button class="btn btn-outline" onclick="copyText('m2-result')">Copy Volume Result</button>
+        </div>
+      </div>
+
+      <!-- Sub Tool 3: Molarity from Mass & Vol -->
+      <div id="m-pane-3" class="grid-2col" style="display: none;">
+        <div>
+          <div class="input-group">
+            <label class="input-label">Mass of Solute:</label>
+            <div class="input-row">
+              <input type="number" step="any" id="m3-mass" value="5.844" oninput="calcMolarityConc()">
+              <select id="m3-mass-unit" onchange="calcMolarityConc()">
+                <option value="1">g (gram)</option>
+                <option value="1e-3">mg (milligram)</option>
+                <option value="1e-6">μg (microgram)</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Formula Weight (g/mol):</label>
+            <input type="number" step="any" id="m3-mw" value="58.44" oninput="calcMolarityConc()">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Total Solution Volume:</label>
+            <div class="input-row">
+              <input type="number" step="any" id="m3-vol" value="1" oninput="calcMolarityConc()">
+              <select id="m3-vol-unit" onchange="calcMolarityConc()">
+                <option value="1">L (liter)</option>
+                <option value="1e-3">mL (milliliter)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="result-card-inner">
+            <div class="result-title">Calculated Concentration</div>
+            <div class="result-value" id="m3-result">100.0 mM</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;" id="m3-subresult">(= 0.100 M)</div>
+          </div>
+          <div class="result-formula">
+            Formula: Concentration (M) = Mass (g) ÷ [ Volume (L) × MW (g/mol) ]
+          </div>
+          <button class="btn btn-outline" onclick="copyText('m3-result')">Copy Concentration</button>
+        </div>
+      </div>
+
+      <!-- Sub Tool 4: Dilute Stock (C1V1 = C2V2) -->
+      <div id="m-pane-4" class="grid-2col" style="display: none;">
+        <div>
+          <!-- Stock Conc C1 -->
+          <div class="input-group">
+            <label class="input-label">Stock Concentration (C₁):</label>
+            <div class="input-row">
+              <input type="number" step="any" id="m4-c1" value="10" oninput="calcStockDilution()">
+              <select id="m4-c1-unit" onchange="calcStockDilution()">
+                <optgroup label="Mass / Volume Concentrations">
+                  <option value="mg/mL" selected>mg/mL</option>
+                  <option value="ug/mL">μg/mL (ug/mL)</option>
+                  <option value="ng/mL">ng/mL</option>
+                  <option value="pg/mL">pg/mL</option>
+                  <option value="g/L">g/L</option>
+                  <option value="g/mL">g/mL</option>
+                  <option value="%w/v">% (w/v)</option>
+                </optgroup>
+                <optgroup label="Molar Concentrations">
+                  <option value="1e-3">mM (millimolar)</option>
+                  <option value="1">M (molar)</option>
+                  <option value="1e-6">μM (micromolar)</option>
+                  <option value="1e-9">nM (nanomolar)</option>
+                  <option value="1e-12">pM (picomolar)</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+
+          <!-- Desired Conc C2 -->
+          <div class="input-group">
+            <label class="input-label">Desired Final Concentration (C₂):</label>
+            <div class="input-row">
+              <input type="number" step="any" id="m4-c2" value="100" oninput="calcStockDilution()">
+              <select id="m4-c2-unit" onchange="calcStockDilution()">
+                <optgroup label="Mass / Volume Concentrations">
+                  <option value="ug/mL" selected>μg/mL (ug/mL)</option>
+                  <option value="mg/mL">mg/mL</option>
+                  <option value="ng/mL">ng/mL</option>
+                  <option value="pg/mL">pg/mL</option>
+                  <option value="g/L">g/L</option>
+                  <option value="g/mL">g/mL</option>
+                  <option value="%w/v">% (w/v)</option>
+                </optgroup>
+                <optgroup label="Molar Concentrations">
+                  <option value="1e-6">μM (micromolar)</option>
+                  <option value="1e-3">mM (millimolar)</option>
+                  <option value="1e-9">nM (nanomolar)</option>
+                  <option value="1e-12">pM (picomolar)</option>
+                  <option value="1">M (molar)</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+
+          <!-- Desired Final Volume V2 -->
+          <div class="input-group">
+            <label class="input-label">Desired Final Volume (V₂):</label>
+            <div class="input-row">
+              <input type="number" step="any" id="m4-v2" value="50" oninput="calcStockDilution()">
+              <select id="m4-v2-unit" onchange="calcStockDilution()">
+                <option value="1e-3">mL</option>
+                <option value="1">L</option>
+                <option value="1e-6">μL</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="result-card-inner">
+            <div class="result-title">Stock Volume Required (V₁)</div>
+            <div class="result-value" id="m4-result">500.0 μL</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;" id="m4-solvent">Buffer / Solvent: 49.50 mL</div>
+          </div>
+          <div class="callout callout-success" id="m4-sop">
+            Pipette <strong>500.0 μL</strong> stock solution into <strong>49.50 mL</strong> diluent buffer.
+          </div>
+          <button class="btn btn-outline" onclick="copyText('m4-sop')">Copy Pipetting Step</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 2. MOLES <-> GRAMS CONVERTER ================= -->
+    <section class="calc-card" id="section-moles">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-icon" style="background: var(--accent-purple-light); color: var(--accent-purple);">
+            <svg class="icon" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+          </div>
+          <div>
+            <h2 class="card-title">Moles ⇄ Grams Molecular Converter</h2>
+            <p class="card-subtitle">Convert between mass and moles using molecular formula weight</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div>
+          <div class="input-group">
+            <label class="input-label">Conversion Mode:</label>
+            <select id="mole-mode" onchange="calcMoleGram()">
+              <option value="molesFromGrams">Calculate Moles from Mass (Grams)</option>
+              <option value="gramsFromMoles">Calculate Mass (Grams) from Moles</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label" id="mole-input-label">Input Value:</label>
+            <div class="input-row">
+              <input type="number" step="any" id="mole-val" value="10" oninput="calcMoleGram()">
+              <select id="mole-unit" onchange="calcMoleGram()">
+                <option value="1e-3">mg (milligram)</option>
+                <option value="1">g (gram)</option>
+                <option value="1e-6">μg (microgram)</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Formula Weight (g/mol):</label>
+            <input type="number" step="any" id="mole-mw" value="58.44" oninput="calcMoleGram()">
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="result-card-inner">
+            <div class="result-title" id="mole-result-title">Calculated Amount of Substance</div>
+            <div class="result-value" id="mole-result-val">171.12 μmol</div>
+          </div>
+          <!-- Prefix breakdown table -->
+          <div class="table-responsive" style="background: var(--bg-card);">
+            <table>
+              <tbody id="mole-prefix-rows">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 3. ECANYTHING DOSE-RESPONSE CALCULATOR ================= -->
+    <section class="calc-card" id="section-ecanything">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-icon" style="background: var(--accent-emerald-light); color: var(--accent-emerald);">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
+          <div>
+            <h2 class="card-title">ECanything & Hill Slope Dose-Response Calculator</h2>
+            <p class="card-subtitle">Compute EC80, EC90, IC50 or custom EC_F from EC50 with sigmoidal curve</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div>
+          <div class="input-group">
+            <label class="input-label">Enter EC₅₀ / IC₅₀ Value:</label>
+            <div class="input-row">
+              <input type="number" step="any" id="ec50-val" value="10" oninput="calcECAnything()">
+              <select id="ec50-unit" onchange="calcECAnything()">
+                <option value="1e-9">nM (nanomolar)</option>
+                <option value="1e-6">μM (micromolar)</option>
+                <option value="1e-3">mM (millimolar)</option>
+                <option value="1">M (molar)</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Hill Slope (Slope Factor):</label>
+            <input type="number" step="any" id="ec-hill" value="1.0" oninput="calcECAnything()">
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Standard non-cooperative receptor binding = 1.0</span>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Desired Target EC% (F%):</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="number" step="any" min="0.1" max="99.9" id="ec-target-f" value="80" oninput="calcECAnything()">
+              <button class="btn btn-outline btn-sm" onclick="setTargetF(80)">EC80</button>
+              <button class="btn btn-outline btn-sm" onclick="setTargetF(90)">EC90</button>
+              <button class="btn btn-outline btn-sm" onclick="setTargetF(95)">EC95</button>
+            </div>
+          </div>
+          <div class="callout callout-warning">
+            <strong>Hill Equation:</strong> EC_F = [ ( F / (100 - F) ) ^ (1 / HillSlope) ] × EC50
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="result-card-inner">
+            <div class="result-title" id="ec-result-title">Target EC80 Concentration</div>
+            <div class="result-value" id="ec-result-val">40.00 nM</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;" id="ec-result-log">log(EC80, M) = -7.3979</div>
+          </div>
+
+          <!-- Dynamic SVG Sigmoidal Curve -->
+          <div style="background: #090d16; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid #1e293b;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+              <span>Sigmoidal Dose-Response Curve</span>
+              <span id="ec-chart-coords" style="color: #38bdf8;">Hover points</span>
+            </div>
+            <svg id="ec-svg-chart" viewBox="0 0 400 180" style="width: 100%; height: auto; overflow: visible;">
+              <!-- Drawn dynamically via JS -->
+            </svg>
+          </div>
+
+          <!-- Milestone Table -->
+          <div class="table-responsive" style="background: var(--bg-card); max-height: 140px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Milestone</th>
+                  <th>Concentration</th>
+                  <th>Log10(M)</th>
+                </tr>
+              </thead>
+              <tbody id="ec-milestone-rows">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 4. DILUTIONS & SERIAL DILUTIONS ================= -->
+    <section class="calc-card" id="section-dilution">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-icon" style="background: var(--accent-cyan-light); color: var(--accent-cyan);">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+          </div>
+          <div>
+            <h2 class="card-title">Dilutions & Multi-Step Serial Dilution Matrix</h2>
+            <p class="card-subtitle">Generate assay dilutions, logarithmic tables, and 96-well plate pipetting maps</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div>
+          <div class="input-group">
+            <label class="input-label">Initial Stock Concentration (C₀):</label>
+            <div class="input-row">
+              <input type="number" step="any" id="sd-c0" value="100" oninput="calcSerialDilution()">
+              <select id="sd-c0-unit" onchange="calcSerialDilution()">
+                <optgroup label="Mass / Volume Concentrations">
+                  <option value="ug/mL" selected>μg/mL (ug/mL)</option>
+                  <option value="mg/mL">mg/mL</option>
+                  <option value="ng/mL">ng/mL</option>
+                  <option value="pg/mL">pg/mL</option>
+                  <option value="g/L">g/L</option>
+                  <option value="%w/v">% (w/v)</option>
+                </optgroup>
+                <optgroup label="Molar Concentrations">
+                  <option value="1e-6">μM (micromolar)</option>
+                  <option value="1e-3">mM (millimolar)</option>
+                  <option value="1e-9">nM (nanomolar)</option>
+                  <option value="1">M (molar)</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Dilution-Folds (X):</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="number" step="any" id="sd-fold" value="3" oninput="calcSerialDilution()">
+              <button class="btn btn-outline btn-sm" onclick="setSerialFold(2)">2×</button>
+              <button class="btn btn-outline btn-sm" onclick="setSerialFold(3)">3×</button>
+              <button class="btn btn-outline btn-sm" onclick="setSerialFold(10)">10×</button>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Number of Wells / Steps:</label>
+            <input type="number" min="2" max="16" id="sd-steps" value="8" oninput="calcSerialDilution()">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Final Volume per Well (μL):</label>
+            <input type="number" step="any" id="sd-vol" value="150" oninput="calcSerialDilution()">
+          </div>
+        </div>
+
+        <div>
+          <!-- Pipetting Instruction summary -->
+          <div class="callout callout-success" id="sd-pipette-recipe">
+            Add <strong>100.0 μL</strong> buffer to wells 2-8. Transfer <strong>50.0 μL</strong> sequentially.
+          </div>
+
+          <!-- 96-well visualizer -->
+          <div class="plate-grid" id="sd-plate-viz">
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Serial Dilution Table -->
+          <div class="table-responsive" style="margin-top: 1rem; max-height: 220px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Step</th>
+                  <th>Concentration</th>
+                  <th>LOG10(C) [Normalized]</th>
+                  <th>Dilution</th>
+                </tr>
+              </thead>
+              <tbody id="sd-table-rows">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 5. IN VIVO FORMULATION & ANIMAL DOSING ================= -->
+    <section class="calc-card" id="section-invivo">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-icon" style="background: var(--accent-rose-light); color: var(--accent-rose);">
+            <svg class="icon" viewBox="0 0 24 24"><path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-.4.4-1 .6-1.7.6H3v-4c0-.7.2-1.3.6-1.7L14 3.9"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/></svg>
+          </div>
+          <div>
+            <h2 class="card-title">In Vivo Formulation & Animal Dosing Calculator</h2>
+            <p class="card-subtitle">Calculate required drug mass, DMSO master stock, and clear solution addition steps</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div>
+          <!-- Step 1: Animal Parameters -->
+          <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+            <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.75rem; color: var(--accent-rose);">
+              Step 1: Animal Dosing Parameters
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div>
+                <label class="input-label">Dosage (mg/kg):</label>
+                <input type="number" step="any" id="iv-dosage" value="10" oninput="calcInVivo()">
+              </div>
+              <div>
+                <label class="input-label">Avg Animal Weight (g):</label>
+                <input type="number" step="any" id="iv-weight" value="25" oninput="calcInVivo()">
+              </div>
+              <div>
+                <label class="input-label">Dosing Vol / Animal (μL):</label>
+                <input type="number" step="any" id="iv-dosing-vol" value="100" oninput="calcInVivo()">
+              </div>
+              <div>
+                <label class="input-label">Animals (+1 allowance):</label>
+                <input type="number" min="1" id="iv-animals" value="6" oninput="calcInVivo()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Vehicle Selection -->
+          <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md);">
+            <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.75rem; color: var(--accent-rose);">
+              Step 2: Vehicle Solvent Ratios (%)
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div>
+                <label class="input-label">DMSO (%):</label>
+                <input type="number" min="0" max="100" id="iv-dmso-pct" value="5" oninput="calcInVivo()">
+              </div>
+              <div>
+                <label class="input-label">PEG300 (%):</label>
+                <input type="number" min="0" max="100" id="iv-peg-pct" value="40" oninput="calcInVivo()">
+              </div>
+              <div>
+                <label class="input-label">Tween 80 (%):</label>
+                <input type="number" min="0" max="100" id="iv-tween-pct" value="5" oninput="calcInVivo()">
+              </div>
+              <div>
+                <label class="input-label">Saline / ddH₂O (Balance %):</label>
+                <input type="number" id="iv-water-pct" value="50" readonly style="background: var(--bg-card); font-weight: bold;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Generated SOP -->
+        <div class="result-box">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; text-align: center;">
+            <div class="result-card-inner">
+              <div class="result-title">Working Conc.</div>
+              <div style="font-size: 1.15rem; font-weight: 800; color: var(--accent-rose);" id="iv-working-conc">2.50 mg/mL</div>
+            </div>
+            <div class="result-card-inner">
+              <div class="result-title">Total Drug</div>
+              <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary);" id="iv-total-drug">1.50 mg</div>
+            </div>
+            <div class="result-card-inner">
+              <div class="result-title">Total Vol</div>
+              <div style="font-size: 1.15rem; font-weight: 800; color: var(--accent-emerald);" id="iv-total-vol">600 μL</div>
+            </div>
+          </div>
+
+          <!-- DMSO Master Stock -->
+          <div class="result-card-inner" style="text-align: left;">
+            <div style="font-weight: 700; font-size: 0.8rem; color: var(--accent-rose); margin-bottom: 0.25rem;">
+              1. DMSO Master Liquid Preparation:
+            </div>
+            <div style="font-size: 0.825rem;" id="iv-master-text">
+              Dissolve <strong>1.50 mg</strong> drug in <strong>30.0 μL</strong> 100% DMSO (Master Conc: <strong>50.0 mg/mL</strong>). Sonicate until clear.
+            </div>
+          </div>
+
+          <!-- Step-by-Step SOP -->
+          <div class="result-card-inner" style="text-align: left;">
+            <div style="font-weight: 700; font-size: 0.8rem; color: var(--text-main); margin-bottom: 0.35rem;">
+              2. Sequential Addition SOP (Clear Solution):
+            </div>
+            <ol style="font-size: 0.775rem; padding-left: 1.25rem; line-height: 1.6;" id="iv-sop-list">
+              <!-- Injected via JS -->
+            </ol>
+          </div>
+
+          <div class="callout callout-warning" style="font-size: 0.75rem;">
+            ⚠️ <strong>Crucial:</strong> Add aqueous phase last and dropwise while vortexing. Ensure complete clarity before moving to the next solvent.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 6. CHEMICAL FORMULA & MW PARSER ================= -->
+    <section class="calc-card" id="section-mw">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-icon" style="background: var(--accent-amber-light); color: var(--accent-amber);">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><path d="M20.2 20.2c2.4-2.4 2.4-6.3 0-8.7L12 3.3 3.8 11.5c-2.4 2.4-2.4 6.3 0 8.7 2.4 2.4 6.3 2.4 8.7 0l7.7-7.7"/></svg>
+          </div>
+          <div>
+            <h2 class="card-title">Chemical Formula & Molecular Weight Engine</h2>
+            <p class="card-subtitle">Parse complex chemical formulas (hydrates, parentheses) and calculate elemental breakdown</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div>
+          <div class="input-group">
+            <label class="input-label">Type Chemical Formula:</label>
+            <input type="text" id="chem-formula-input" value="C6H12O6" oninput="parseFormulaLive()" style="font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700;">
+          </div>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button class="btn btn-outline btn-sm font-mono" onclick="setFormulaPreset('NaCl')">NaCl</button>
+            <button class="btn btn-outline btn-sm font-mono" onclick="setFormulaPreset('C6H12O6')">C6H12O6</button>
+            <button class="btn btn-outline btn-sm font-mono" onclick="setFormulaPreset('CuSO4*5H2O')">CuSO4*5H2O</button>
+            <button class="btn btn-outline btn-sm font-mono" onclick="setFormulaPreset('(NH4)2SO4')">(NH4)2SO4</button>
+            <button class="btn btn-outline btn-sm font-mono" onclick="setFormulaPreset('C4H11NO3')">Tris (C4H11NO3)</button>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="result-card-inner">
+            <div class="result-title">Formula Weight (Molecular Weight)</div>
+            <div class="result-value" id="formula-mw-val" style="color: var(--accent-amber);">180.156 g/mol</div>
+          </div>
+          <div class="table-responsive" style="background: var(--bg-card); max-height: 160px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Element</th>
+                  <th>Count</th>
+                  <th>Mass (g/mol)</th>
+                  <th>Mass %</th>
+                </tr>
+              </thead>
+              <tbody id="formula-breakdown-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 7. BUFFER RECIPE BOOK ================= -->
+    <section class="calc-card" id="section-buffers">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-icon" style="background: var(--accent-cyan-light); color: var(--accent-cyan);">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+          </div>
+          <div>
+            <h2 class="card-title">Standard Buffer & Solution Recipe Book</h2>
+            <p class="card-subtitle">Scale reagent masses and preparation instructions dynamically by target volume</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Volume Scaling Controls -->
+      <div style="background: var(--bg-subtle); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 1.5rem;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <label class="input-label" style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text-main);">
+              Scale to Volume:
+            </label>
+            <div class="vol-display-badge" id="buf-vol-badge">
+              <svg class="icon" style="width: 0.95rem; height: 0.95rem;" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/></svg>
+              <span id="buf-vol-text">1000 mL (1.00 L)</span>
+            </div>
+          </div>
+
+          <!-- Volume Stepper & Manual Numeric Entry -->
+          <div class="vol-control-bar">
+            <button class="vol-step-btn" onclick="stepBufferVol(-0.25)" title="Decrease Volume by 250 mL">−</button>
+            <input 
+              type="number" 
+              step="any" 
+              min="0.01" 
+              id="buf-vol" 
+              value="1.0" 
+              oninput="onBufferVolInput(this.value)"
+              style="width: 80px; text-align: center; font-weight: 800; font-size: 0.95rem; padding: 0.35rem 0.5rem; border: none; background: transparent;"
+            >
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); padding-right: 0.5rem;">L</span>
+            <button class="vol-step-btn" onclick="stepBufferVol(0.25)" title="Increase Volume by 250 mL">+</button>
+          </div>
+        </div>
+
+        <!-- Quick Volume Preset Chips -->
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Quick Presets:</span>
+          <div class="vol-presets-row" id="vol-presets-container">
+            <button class="vol-preset-chip" onclick="setBufferPresetVol(0.1)">100 mL</button>
+            <button class="vol-preset-chip" onclick="setBufferPresetVol(0.25)">250 mL</button>
+            <button class="vol-preset-chip" onclick="setBufferPresetVol(0.5)">500 mL</button>
+            <button class="vol-preset-chip active" onclick="setBufferPresetVol(1.0)">1 L (1000 mL)</button>
+            <button class="vol-preset-chip" onclick="setBufferPresetVol(2.0)">2 L</button>
+            <button class="vol-preset-chip" onclick="setBufferPresetVol(5.0)">5 L</button>
+            <button class="vol-preset-chip" onclick="setBufferPresetVol(10.0)">10 L</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div>
+          <label class="input-label">Select Buffer Formulation:</label>
+          <select id="buffer-selector" onchange="renderBufferRecipe()" style="margin-bottom: 1rem; font-weight: 600;">
+            <option value="pbs1x">1X Phosphate-Buffered Saline (PBS, pH 7.4)</option>
+            <option value="pbs10x">10X Phosphate-Buffered Saline (10X PBS Stock)</option>
+            <option value="tris1m">1 M Tris-HCl Stock (pH 8.0)</option>
+            <option value="tae50x">50X TAE Electrophoresis Buffer</option>
+            <option value="tbe10x">10X TBE Electrophoresis Buffer</option>
+            <option value="ripa">1X RIPA Cell Lysis Buffer</option>
+            <option value="sds-page">10X SDS-PAGE Running Buffer</option>
+          </select>
+
+          <div class="callout callout-success" id="buffer-notes">
+            <!-- Notes injected via JS -->
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 700;">
+            <span style="color: var(--text-main);">Scaled Reagent Weighing Table:</span>
+            <span id="buffer-badge-sub" style="color: var(--accent-cyan); font-family: var(--font-mono);">Scale: 1.00 L</span>
+          </div>
+          <div class="table-responsive" style="background: var(--bg-card);">
+            <table>
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Working Conc.</th>
+                  <th>Base (1 L)</th>
+                  <th style="color: var(--primary);">Scaled Mass / Vol</th>
+                </tr>
+              </thead>
+              <tbody id="buffer-table-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  
+        <!-- ================= 8. BUY ME A COFFEE / SUPPORT ================= -->
+    <section class="calc-card" id="section-coffee" style="display: none; border: 1.5px solid rgba(245, 158, 11, 0.4); box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.18); max-width: 720px; margin: 0 auto 2rem;">
+      <div class="card-header" style="border-bottom: 1px solid rgba(245, 158, 11, 0.2);">
+        <div class="card-title-group">
+          <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: #d97706;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <h2 class="card-title" style="color: #b45309; margin: 0;">Buy Me a Coffee & Support SciCalc Studio</h2>
+              <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.3);">☕ Fuel the Project</span>
+            </div>
+            <p class="card-subtitle">Empowering scientists, lab researchers, and students with precision, ad-free laboratory tools.</p>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="showTab('all')" style="margin-left: auto;">
+          ← Back to Workbench
+        </button>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; align-items: center;">
+        
+        <!-- Why Buy Me a Coffee note -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.2rem; font-size: 0.875rem; line-height: 1.6; color: var(--text-muted); width: 100%;">
+          <p style="margin: 0;">
+            ☕ <strong>Why Buy Me a Coffee?</strong><br>
+            Building, validating, and maintaining these specialized scientific tools requires countless hours of development and mathematical verification. If this suite has saved you time at the bench, prevented an experimental error, or helped your research or studies, your contribution means the world! It helps keep the platform continuously updated, ad-free, and freely accessible to scientists everywhere.
+          </p>
+        </div>
+
+        <!-- UPI QR Code Card -->
+        <div style="background: var(--bg-card); border: 2px solid rgba(245, 158, 11, 0.35); border-radius: var(--radius-lg); padding: 1.75rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.25rem; box-shadow: 0 12px 30px -8px rgba(245, 158, 11, 0.15); width: 100%; max-width: 480px;">
+          
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.5rem;">📱</span>
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--text);">Scan & Support via UPI</h3>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Instant direct contribution via any UPI payment app</p>
+            </div>
+          </div>
+
+          <!-- QR Code Container -->
+          <div style="background: #ffffff; padding: 1rem; border-radius: 1.25rem; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); max-width: 280px; width: 100%;">
+            <img src="data:image/png;base64,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Beo+q9vXjzr6aPuLv/iL2oLuoosuslNPPXWPP/caqysMQ7vwwgvtmTVfeb+8vGzfuuEG+8lPfuKGZL7PkXoe1HvQ9zhV6vxUal7U/aI+j3znReV7fur6qftaHadqzQvxIAgsjuOJE6EWLHmeW6/X83ZwfFPn15Z8qgdA7U+lFo7j8dgGg4GNx2M3VEvtTz1/KvXCLIrCer2e5XnuhmqttK/3228/u9/972/rar6s593vfreddtppbjM8ete73mUvfvGL3eZdfvKTn9jzn/c8+4//+A83JFHPURiGFsfxxD/ZRT0P6j2onnd1nCp1fip1/dT9oj6PfOdF5Xt+6vqp+1odp2rNC3GV74VW+/PN9/xmvT/f1Pm1hboOal5219/c3JzNLyzU/nSUiy++2E4++WR+MkrD1q1bZxdeeKGdfPLJbmiXW265xR732MdOvDemwe72595Qz4NKHafK9/x8U/PZlry0ZX5tGefKHxcBQAvtqQj/53/+ZzvllFMowqfAzp077dnPfrZdeumlbmiXgw8+2D76D/9g+++/vxsCgNajEAcwMzbMz9cW4V/5ylfsN3/zN2379u1uqHG//uu/bsPh0C677DK75JJL7G1ve5uddtppdsQRR7i/daZs377dnvrUp9b+NJXDDz/czj//fLcZAFqPQhzATAiCoPYfZn7jG9+wE044YVX/8d/d9fSnP93e97732Y9+9CP7xCc+Yb/3e79nj3/84+2kk06yTZs22QUXXGBf//rXbTgcuv/pTLntttvsCU94gl1//fVuaJeTOx177nOf6zYDQKtRiANovbl16yzcsMFt3uXGG2+04447zm6++WY35N0zn/lMu+iii+y2226zD3/4w/aCF7zADjjgAPe33cXv/d7v2Tvf+U63eabcfPPNdvzxx9v3vvc9N7TLucOhHX744W4zALQWhTiAVlu3bp3Nz8+7zbtUVWW/8Ru/YTfeeKMb8u68886ziy++2H7rt35r4neeX/rSl9pr9vDtoG2X57k99alPXfHVof3339/+bjSyhYUFNwQArUQhDqDV4jiufS/8la98pX3lK19xmxvxyEc+0m2ayFve8hZ7wQte4DbPlCuuuML+8A//0G3e5UEPepCdfc45bjMAtBKFOIDWetzjHmcHHnSQ27zLJZdcMlXvV5955pl3+x31973vfXbSSSe5zTPl7LPP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" alt="UPI QR Code - PhonePe / HDFC Bank" style="width: 100%; height: auto; display: block; border-radius: 0.75rem;" />
+          </div>
+
+          <!-- Supported UPI Badges -->
+          <div style="width: 100%; border-top: 1px solid var(--border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+              Works with Any UPI App
+            </div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem;">
+              <span class="badge" style="background: rgba(95, 37, 159, 0.12); color: #5f259f; border: 1px solid rgba(95, 37, 159, 0.25); font-weight: 600;">🟣 PhonePe</span>
+              <span class="badge" style="background: rgba(66, 133, 244, 0.12); color: #1a73e8; border: 1px solid rgba(66, 133, 244, 0.25); font-weight: 600;">🔵 Google Pay</span>
+              <span class="badge" style="background: rgba(0, 185, 241, 0.12); color: #002970; border: 1px solid rgba(0, 185, 241, 0.25); font-weight: 600;">💳 Paytm</span>
+              <span class="badge" style="background: rgba(224, 94, 27, 0.12); color: #e05e1b; border: 1px solid rgba(224, 94, 27, 0.25); font-weight: 600;">🏛️ BHIM</span>
+              <span class="badge" style="background: rgba(0, 76, 143, 0.12); color: #004c8f; border: 1px solid rgba(0, 76, 143, 0.25); font-weight: 600;">🏦 HDFC Bank</span>
+              <span class="badge" style="background: rgba(255, 153, 0, 0.12); color: #d97706; border: 1px solid rgba(255, 153, 0, 0.25); font-weight: 600;">📦 Amazon Pay</span>
+            </div>
+          </div>
+
+          <!-- Step-by-Step Instructions -->
+          <div style="background: var(--bg); border-radius: var(--radius-md); padding: 0.85rem; width: 100%; text-align: left; font-size: 0.8rem; color: var(--text-muted);">
+            <div style="font-weight: 700; color: var(--text); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+              <span>⚡ Quick Steps:</span>
+            </div>
+            <ol style="margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.25rem;">
+              <li>Open your favorite UPI app (PhonePe, GPay, Paytm, BHIM, Bank App).</li>
+              <li>Select <strong>Scan QR</strong> and point camera at the QR code above.</li>
+              <li>Enter any amount to buy a coffee & hit Pay!</li>
+            </ol>
+          </div>
+
+          <div style="font-size: 0.85rem; font-weight: 600; color: #d97706; display: flex; align-items: center; gap: 0.35rem;">
+            <span>❤️ Thank you for supporting open scientific tools!</span>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  <!-- Footer -->
+  <footer style="background: var(--bg-card); border-top: 1px solid var(--border); padding: 2rem 0; text-align: center; font-size: 0.875rem; color: var(--text-muted); line-height: 1.6;" class="no-print">
+    <div class="container">
+      <p style="font-weight: 400; color: var(--text-muted); font-size: 0.875rem; margin: 0 0 0.35rem;">
+        SciCalc Studio — Integrated Scientific &amp; Research Laboratory Calculation Suite
+      </p>
+      <p style="font-weight: 400; font-size: 0.825rem; margin: 0; color: var(--text-muted);">
+        Designed by Dr. Ram Bharti, PhD, in Biological Sciences, for molecular biology, pharmacology, and chemistry benchwork. 100% Client-side and secure.
+      </p>
+    </div>
+  </footer>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    // Atomic Weights Dictionary
+    const ATOMIC_WEIGHTS = {
+      H: 1.008, He: 4.0026, Li: 6.94, Be: 9.0122, B: 10.81, C: 12.011, N: 14.007,
+      O: 15.999, F: 18.998, Ne: 20.180, Na: 22.990, Mg: 24.305, Al: 26.982,
+      Si: 28.085, P: 30.974, S: 32.06, Cl: 35.45, K: 39.098, Ar: 39.948,
+      Ca: 40.078, Sc: 44.956, Ti: 47.867, V: 50.942, Cr: 51.996, Mn: 54.938,
+      Fe: 55.845, Co: 58.933, Ni: 58.693, Cu: 63.546, Zn: 65.38, Ga: 69.723,
+      Ge: 72.63, As: 74.922, Se: 78.971, Br: 79.904, Kr: 83.798, Rb: 85.468,
+      Sr: 87.62, Y: 88.906, Zr: 91.224, Nb: 92.906, Mo: 95.95, Tc: 98,
+      Ru: 101.07, Rh: 102.91, Pd: 106.42, Ag: 107.87, Cd: 112.41, In: 114.82,
+      Sn: 118.71, Sb: 121.76, Te: 127.60, I: 126.90, Xe: 131.29, Cs: 132.91,
+      Ba: 137.33, Pt: 195.08, Au: 196.97, Hg: 200.59, Pb: 207.2, Bi: 208.98
+    };
+
+    // Buffer Database
+    const BUFFER_DATA = {
+      pbs1x: {
+        name: "1X PBS (pH 7.4)",
+        notes: "Dissolve reagents in ~80% of final volume ddH2O, adjust pH to 7.4 with HCl/NaOH, then bring to target volume with ddH2O. Autoclave or sterile filter (0.22 μm).",
+        components: [
+          { name: "NaCl", formula: "NaCl", mw: 58.44, targetM: 0.137, label: "137 mM", base1L: "8.006 g" },
+          { name: "KCl", formula: "KCl", mw: 74.55, targetM: 0.0027, label: "2.7 mM", base1L: "0.201 g" },
+          { name: "Na2HPO4", formula: "Na2HPO4", mw: 141.96, targetM: 0.010, label: "10 mM", base1L: "1.420 g" },
+          { name: "KH2PO4", formula: "KH2PO4", mw: 136.09, targetM: 0.0018, label: "1.8 mM", base1L: "0.245 g" }
+        ]
+      },
+      pbs10x: {
+        name: "10X PBS Stock",
+        notes: "Dissolve reagents in ~80% of final volume ddH2O, adjust pH to ~6.8 (shifts to 7.4 upon 1:10 dilution). Autoclave.",
+        components: [
+          { name: "NaCl", formula: "NaCl", mw: 58.44, targetM: 1.37, label: "1.37 M", base1L: "80.06 g" },
+          { name: "KCl", formula: "KCl", mw: 74.55, targetM: 0.027, label: "27 mM", base1L: "2.013 g" },
+          { name: "Na2HPO4", formula: "Na2HPO4", mw: 141.96, targetM: 0.100, label: "100 mM", base1L: "14.20 g" },
+          { name: "KH2PO4", formula: "KH2PO4", mw: 136.09, targetM: 0.018, label: "18 mM", base1L: "2.450 g" }
+        ]
+      },
+      tris1m: {
+        name: "1 M Tris-HCl Stock (pH 8.0)",
+        notes: "Dissolve Tris base in ~70% of final volume ddH2O. Add concentrated HCl slowly to reach pH 8.0 (approx 42 mL HCl per 1 L), then bring to target volume.",
+        components: [
+          { name: "Tris Base", formula: "C4H11NO3", mw: 121.14, targetM: 1.0, label: "1.0 M", base1L: "121.14 g" }
+        ]
+      },
+      tae50x: {
+        name: "50X TAE Buffer",
+        notes: "Dissolve Tris base in ~70% ddH2O, add acetic acid and EDTA stock, bring to target volume. Dilute 1:50 with ddH2O for 1X agarose gel running buffer.",
+        components: [
+          { name: "Tris Base", formula: "C4H11NO3", mw: 121.14, targetM: 2.0, label: "2.0 M", base1L: "242.28 g" },
+          { name: "Glacial Acetic Acid", formula: "CH3COOH", mw: 60.05, liquidPerL: 57.1, label: "57.1 mL/L", base1L: "57.10 mL" },
+          { name: "0.5M EDTA (pH 8.0)", formula: "EDTA-stock", mw: 372.24, liquidPerL: 100.0, label: "50 mM (100 mL/L)", base1L: "100.00 mL" }
+        ]
+      },
+      tbe10x: {
+        name: "10X TBE Buffer",
+        notes: "Dissolve reagents in 80% final volume ddH2O, bring to volume. Store at room temperature (tends to precipitate if refrigerated). Dilute 1:10 for 1X.",
+        components: [
+          { name: "Tris Base", formula: "C4H11NO3", mw: 121.14, targetM: 0.89, label: "890 mM", base1L: "107.81 g" },
+          { name: "Boric Acid", formula: "H3BO3", mw: 61.83, targetM: 0.89, label: "890 mM", base1L: "55.03 g" },
+          { name: "EDTA Disodium 2H2O", formula: "EDTA", mw: 372.24, targetM: 0.020, label: "20 mM", base1L: "7.445 g" }
+        ]
+      },
+      ripa: {
+        name: "1X RIPA Lysis Buffer",
+        notes: "Add protease & phosphatase inhibitor cocktail tablets fresh right before cell lysis. Store base formulation at 4°C.",
+        components: [
+          { name: "Tris-HCl (pH 8.0)", formula: "Tris-HCl", mw: 157.60, targetM: 0.050, label: "50 mM", base1L: "7.880 g" },
+          { name: "NaCl", formula: "NaCl", mw: 58.44, targetM: 0.150, label: "150 mM", base1L: "8.766 g" },
+          { name: "SDS", formula: "SDS", mw: 288.38, targetM: 0.00347, label: "0.1% w/v", base1L: "1.000 g" },
+          { name: "Sodium Deoxycholate", formula: "Na-DOC", mw: 414.55, targetM: 0.012, label: "0.5% w/v", base1L: "5.000 g" },
+          { name: "Triton X-100", formula: "Triton", mw: 625, liquidPerL: 10.0, label: "1.0% v/v", base1L: "10.00 mL" }
+        ]
+      },
+      "sds-page": {
+        name: "10X SDS-PAGE Running Buffer",
+        notes: "Naturally sits at pH ~8.3; do NOT adjust pH with acid or base. Dilute 1:10 with ddH2O for 1X running buffer.",
+        components: [
+          { name: "Tris Base", formula: "C4H11NO3", mw: 121.14, targetM: 0.25, label: "250 mM", base1L: "30.29 g" },
+          { name: "Glycine", formula: "C2H5NO2", mw: 75.07, targetM: 1.92, label: "1.92 M", base1L: "144.13 g" },
+          { name: "SDS", formula: "SDS", mw: 288.38, targetM: 0.0347, label: "1.0% w/v", base1L: "10.00 g" }
+        ]
+      }
+    };
+
+    // Tab Navigation
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('tab-' + tabId);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const sections = ['section-molarity', 'section-moles', 'section-ecanything', 'section-dilution', 'section-invivo', 'section-mw', 'section-buffers', 'section-coffee'];
+      const hero = document.getElementById('hero-banner');
+
+      if (tabId === 'all') {
+        sections.forEach(s => {
+          if (s === 'section-coffee') {
+            const cEl = document.getElementById(s);
+            if (cEl) cEl.style.display = 'none';
+          } else {
+            const el = document.getElementById(s);
+            if (el) el.style.display = 'block';
+          }
+        });
+        if (hero) hero.style.display = 'block';
+      } else {
+        sections.forEach(s => {
+          const el = document.getElementById(s);
+          if (el) el.style.display = 'none';
+        });
+        if (hero) hero.style.display = 'none';
+        const target = {
+          molarity: 'section-molarity',
+          moles: 'section-moles',
+          ecanything: 'section-ecanything',
+          dilution: 'section-dilution',
+          invivo: 'section-invivo',
+          mw: 'section-mw',
+          buffers: 'section-buffers',
+          coffee: 'section-coffee'
+        }[tabId];
+        if (target) {
+          const targetEl = document.getElementById(target);
+          if (targetEl) targetEl.style.display = 'block';
+        }
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+    }
+
+    // Number formatter
+    function fmt(num, sig = 4) {
+      if (num === null || num === undefined || isNaN(num)) return "—";
+      if (num === 0) return "0";
+      const abs = Math.abs(num);
+      if (abs >= 0.001 && abs < 100000) {
+        return Number(num.toPrecision(sig)).toString();
+      }
+      return num.toExponential(sig - 1);
+    }
+
+    // Universal Concentration Parser for C1V1 = C2V2
+    function parseConcentration(val, unitStr) {
+      if (isNaN(val) || val <= 0) return null;
+      // Normalization base: Molar for molar units, mg/mL for mass units
+      switch(unitStr) {
+        // Molar units
+        case "1": return { val: val * 1.0, type: "molar", label: "M" };
+        case "1e-3": return { val: val * 1e-3, type: "molar", label: "mM" };
+        case "1e-6": return { val: val * 1e-6, type: "molar", label: "μM" };
+        case "1e-9": return { val: val * 1e-9, type: "molar", label: "nM" };
+        case "1e-12": return { val: val * 1e-12, type: "molar", label: "pM" };
+        
+        // Mass/Volume units (normalized to mg/mL)
+        case "mg/mL": return { val: val * 1.0, type: "mass", label: "mg/mL" };
+        case "ug/mL": return { val: val * 1e-3, type: "mass", label: "μg/mL" };
+        case "ng/mL": return { val: val * 1e-6, type: "mass", label: "ng/mL" };
+        case "pg/mL": return { val: val * 1e-9, type: "mass", label: "pg/mL" };
+        case "g/L": return { val: val * 1.0, type: "mass", label: "g/L" };
+        case "g/mL": return { val: val * 1000.0, type: "mass", label: "g/mL" };
+        case "%w/v": return { val: val * 10.0, type: "mass", label: "% (w/v)" };
+        default: 
+          const num = parseFloat(unitStr);
+          return isNaN(num) ? null : { val: val * num, type: "molar", label: unitStr };
+      }
+    }
+
+    // 1. Molarity Calculations
+    function switchMolaritySubTab(idx) {
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`m-pane-${i}`).style.display = (i === idx) ? 'grid' : 'none';
+        document.getElementById(`m-tab-${i}`).classList.toggle('active', i === idx);
+      }
+    }
+
+    function applyQuickReagent(mwVal) {
+      if (!mwVal) return;
+      document.getElementById('m1-mw').value = mwVal;
+      document.getElementById('m2-mw').value = mwVal;
+      document.getElementById('m3-mw').value = mwVal;
+      document.getElementById('mole-mw').value = mwVal;
+      calcMolarityMass();
+      calcMolarityVol();
+      calcMolarityConc();
+      calcMoleGram();
+    }
+
+    function calcMolarityMass() {
+      const concM = (parseFloat(document.getElementById('m1-conc').value) || 0) * parseFloat(document.getElementById('m1-conc-unit').value);
+      const mw = parseFloat(document.getElementById('m1-mw').value) || 0;
+      const volL = (parseFloat(document.getElementById('m1-vol').value) || 0) * parseFloat(document.getElementById('m1-vol-unit').value);
+      const massG = concM * volL * mw;
+      document.getElementById('m1-result').innerText = `${fmt(massG, 4)} g`;
+      document.getElementById('m1-subresult').innerText = `(= ${fmt(massG * 1000, 4)} mg / ${fmt(massG * 1e6, 4)} μg)`;
+      document.getElementById('m1-breakdown').innerText = `${fmt(concM, 3)} M × ${fmt(volL, 3)} L × ${mw} g/mol = ${fmt(massG, 4)} g`;
+    }
+
+    function calcMolarityVol() {
+      const massG = (parseFloat(document.getElementById('m2-mass').value) || 0) * parseFloat(document.getElementById('m2-mass-unit').value);
+      const mw = parseFloat(document.getElementById('m2-mw').value) || 0;
+      const concM = (parseFloat(document.getElementById('m2-conc').value) || 0) * parseFloat(document.getElementById('m2-conc-unit').value);
+      const volL = (concM > 0 && mw > 0) ? massG / (concM * mw) : 0;
+      document.getElementById('m2-result').innerText = volL >= 0.001 ? `${fmt(volL * 1000, 4)} mL` : `${fmt(volL * 1e6, 4)} μL`;
+    }
+
+    function calcMolarityConc() {
+      const massG = (parseFloat(document.getElementById('m3-mass').value) || 0) * parseFloat(document.getElementById('m3-mass-unit').value);
+      const mw = parseFloat(document.getElementById('m3-mw').value) || 0;
+      const volL = (parseFloat(document.getElementById('m3-vol').value) || 0) * parseFloat(document.getElementById('m3-vol-unit').value);
+      const concM = (volL > 0 && mw > 0) ? massG / (volL * mw) : 0;
+      document.getElementById('m3-result').innerText = `${fmt(concM * 1000, 4)} mM`;
+      document.getElementById('m3-subresult').innerText = `(= ${fmt(concM, 4)} M / ${fmt(concM * 1e6, 4)} μM)`;
+    }
+
+    function calcStockDilution() {
+      const rawC1 = parseFloat(document.getElementById('m4-c1').value);
+      const unitC1 = document.getElementById('m4-c1-unit').value;
+      const rawC2 = parseFloat(document.getElementById('m4-c2').value);
+      const unitC2 = document.getElementById('m4-c2-unit').value;
+      const rawV2 = parseFloat(document.getElementById('m4-v2').value);
+      const unitV2 = parseFloat(document.getElementById('m4-v2-unit').value);
+
+      const parsedC1 = parseConcentration(rawC1, unitC1);
+      const parsedC2 = parseConcentration(rawC2, unitC2);
+      const v2L = (!isNaN(rawV2) && rawV2 > 0) ? rawV2 * unitV2 : null;
+
+      if (!parsedC1 || !parsedC2 || !v2L) {
+        document.getElementById('m4-result').innerText = "—";
+        document.getElementById('m4-solvent').innerText = "Enter valid positive values";
+        document.getElementById('m4-sop').innerText = "Enter valid concentration and volume inputs.";
+        return;
+      }
+
+      // Check unit category compatibility
+      if (parsedC1.type !== parsedC2.type) {
+        document.getElementById('m4-result').innerText = "Unit Mismatch";
+        document.getElementById('m4-solvent').innerText = "Select compatible units for C1 and C2 (both molar or both mass/mL)";
+        document.getElementById('m4-sop').innerText = "Please select both concentrations in Molar units (M, mM, μM...) or both in Mass/Volume units (mg/mL, μg/mL, ng/mL, %w/v...).";
+        return;
+      }
+
+      if (parsedC2.val > parsedC1.val) {
+        document.getElementById('m4-result').innerText = "—";
+        document.getElementById('m4-solvent').innerText = "C2 > C1";
+        document.getElementById('m4-sop').innerText = "Desired concentration (C2) cannot exceed stock concentration (C1)!";
+        return;
+      }
+
+      const fold = parsedC1.val / parsedC2.val;
+      const v1L = v2L / fold;
+      const solvL = v2L - v1L;
+
+      const v1Formatted = v1L >= 0.001 ? `${fmt(v1L * 1000, 4)} mL` : `${fmt(v1L * 1e6, 4)} μL`;
+      const solvFormatted = solvL >= 0.001 ? `${fmt(solvL * 1000, 4)} mL` : `${fmt(solvL * 1e6, 4)} μL`;
+      const v2Formatted = v2L >= 0.001 ? `${fmt(v2L * 1000, 4)} mL` : `${fmt(v2L * 1e6, 4)} μL`;
+
+      document.getElementById('m4-result').innerText = v1Formatted;
+      document.getElementById('m4-solvent').innerText = `Diluent / Solvent: ${solvFormatted} (${fmt(fold, 3)}× dilution)`;
+      document.getElementById('m4-sop').innerHTML = `Pipette <strong>${v1Formatted}</strong> of ${rawC1} ${parsedC1.label} stock into <strong>${solvFormatted}</strong> diluent buffer to reach final volume of <strong>${v2Formatted}</strong> at <strong>${rawC2} ${parsedC2.label}</strong>.`;
+    }
+
+    // 2. Moles ⇄ Grams
+    function calcMoleGram() {
+      const mode = document.getElementById('mole-mode').value;
+      const val = parseFloat(document.getElementById('mole-val').value) || 0;
+      const unitFactor = parseFloat(document.getElementById('mole-unit').value);
+      const mw = parseFloat(document.getElementById('mole-mw').value) || 0;
+      
+      const label = document.getElementById('mole-input-label');
+
+      if (mode === 'molesFromGrams') {
+        label.innerText = 'Mass Input:';
+        const massG = val * unitFactor;
+        const moles = mw > 0 ? massG / mw : 0;
+        document.getElementById('mole-result-title').innerText = "Calculated Moles (n)";
+        document.getElementById('mole-result-val').innerText = `${fmt(moles * 1e6, 4)} μmol`;
+
+        // Matrix
+        document.getElementById('mole-prefix-rows').innerHTML = `
+          <tr><td>Femtomoles (fmol)</td><td class="font-mono font-bold">${fmt(moles * 1e15, 4)}</td></tr>
+          <tr><td>Picomoles (pmol)</td><td class="font-mono font-bold">${fmt(moles * 1e12, 4)}</td></tr>
+          <tr><td>Nanomoles (nmol)</td><td class="font-mono font-bold">${fmt(moles * 1e9, 4)}</td></tr>
+          <tr><td>Micromoles (μmol)</td><td class="font-mono font-bold">${fmt(moles * 1e6, 4)}</td></tr>
+          <tr><td>Millimoles (mmol)</td><td class="font-mono font-bold">${fmt(moles * 1e3, 4)}</td></tr>
+          <tr><td>Moles (mol)</td><td class="font-mono font-bold">${fmt(moles, 4)}</td></tr>
+        `;
+      } else {
+        label.innerText = 'Moles Input:';
+        const moles = val * unitFactor;
+        const massG = moles * mw;
+        document.getElementById('mole-result-title').innerText = "Calculated Mass (m)";
+        document.getElementById('mole-result-val').innerText = `${fmt(massG * 1e3, 4)} mg`;
+
+        // Matrix
+        document.getElementById('mole-prefix-rows').innerHTML = `
+          <tr><td>Nanograms (ng)</td><td class="font-mono font-bold">${fmt(massG * 1e9, 4)}</td></tr>
+          <tr><td>Micrograms (μg)</td><td class="font-mono font-bold">${fmt(massG * 1e6, 4)}</td></tr>
+          <tr><td>Milligrams (mg)</td><td class="font-mono font-bold">${fmt(massG * 1e3, 4)}</td></tr>
+          <tr><td>Grams (g)</td><td class="font-mono font-bold">${fmt(massG, 4)}</td></tr>
+          <tr><td>Kilograms (kg)</td><td class="font-mono font-bold">${fmt(massG * 1e-3, 4)}</td></tr>
+        `;
+      }
+    }
+
+    // 3. ECanything & Hill plot
+    function setTargetF(fVal) {
+      document.getElementById('ec-target-f').value = fVal;
+      calcECAnything();
+    }
+
+    function calcECAnything() {
+      const ec50Val = parseFloat(document.getElementById('ec50-val').value) || 10;
+      const ec50Unit = parseFloat(document.getElementById('ec50-unit').value);
+      const hill = parseFloat(document.getElementById('ec-hill').value) || 1.0;
+      const targetF = parseFloat(document.getElementById('ec-target-f').value) || 80;
+
+      const ec50M = ec50Val * ec50Unit;
+      const logEC50 = Math.log10(ec50M);
+
+      const ratio = Math.pow(targetF / (100 - targetF), 1 / hill);
+      const ecFM = ec50M * ratio;
+      const logECF = logEC50 + (1 / hill) * Math.log10(targetF / (100 - targetF));
+
+      document.getElementById('ec-result-title').innerText = `Target EC${targetF} Concentration`;
+      document.getElementById('ec-result-val').innerText = `${fmt(ecFM / ec50Unit, 4)} nM`;
+      document.getElementById('ec-result-log').innerText = `log(EC${targetF}, M) = ${logECF.toFixed(4)} (Ratio: ${ratio.toFixed(3)}× EC50)`;
+
+      // Milestone table
+      const milestones = [10, 20, 50, 80, 90, 95, 99];
+      let mHtml = '';
+      milestones.forEach(pct => {
+        const r = Math.pow(pct / (100 - pct), 1 / hill);
+        const mConc = ec50M * r;
+        const mLog = logEC50 + (1 / hill) * Math.log10(pct / (100 - pct));
+        const isTarget = pct === targetF;
+        mHtml += `<tr style="${isTarget ? 'background: rgba(251, 191, 36, 0.2); font-weight: bold;' : ''}">
+          <td>EC${pct}</td>
+          <td class="font-mono">${fmt(mConc / ec50Unit, 3)} nM</td>
+          <td class="font-mono">${mLog.toFixed(3)}</td>
+        </tr>`;
+      });
+      document.getElementById('ec-milestone-rows').innerHTML = mHtml;
+
+      // Draw SVG Chart
+      drawSigmoidalCurve(logEC50, hill, targetF, logECF);
+    }
+
+    function drawSigmoidalCurve(logEC50, hill, targetF, logECF) {
+      const minLog = logEC50 - 3.5;
+      const maxLog = logEC50 + 3.5;
+      const points = [];
+      for (let i = 0; i <= 60; i++) {
+        const logX = minLog + (i / 60) * (maxLog - minLog);
+        const concM = Math.pow(10, logX);
+        const ec50M = Math.pow(10, logEC50);
+        const y = 100 / (1 + Math.pow(ec50M / concM, hill));
+        const px = 35 + ((logX - minLog) / (maxLog - minLog)) * 345;
+        const py = 150 - (y / 100) * 125;
+        points.push(`${px.toFixed(1)},${py.toFixed(1)}`);
+      }
+
+      const ec50X = 35 + ((logEC50 - minLog) / (maxLog - minLog)) * 345;
+      const ec50Y = 150 - (50 / 100) * 125;
+
+      const targetX = 35 + ((logECF - minLog) / (maxLog - minLog)) * 345;
+      const targetY = 150 - (targetF / 100) * 125;
+
+      const svg = document.getElementById('ec-svg-chart');
+      svg.innerHTML = `
+        <!-- Grid -->
+        <line x1="35" y1="25" x2="380" y2="25" stroke="#1e293b" stroke-dasharray="2,2"/>
+        <line x1="35" y1="87.5" x2="380" y2="87.5" stroke="#1e293b" stroke-dasharray="2,2"/>
+        <line x1="35" y1="150" x2="380" y2="150" stroke="#334155" stroke-width="1.5"/>
+        <line x1="35" y1="20" x2="35" y2="150" stroke="#334155" stroke-width="1.5"/>
+
+        <!-- Y Axis labels -->
+        <text x="30" y="28" fill="#64748b" font-size="8" text-anchor="end">100%</text>
+        <text x="30" y="90" fill="#64748b" font-size="8" text-anchor="end">50%</text>
+        <text x="30" y="153" fill="#64748b" font-size="8" text-anchor="end">0%</text>
+
+        <!-- Sigmoidal curve -->
+        <polyline points="${points.join(' ')}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- EC50 Crosshair -->
+        <line x1="${ec50X}" y1="${ec50Y}" x2="${ec50X}" y2="150" stroke="#38bdf8" stroke-dasharray="2,2"/>
+        <line x1="35" y1="${ec50Y}" x2="${ec50X}" y2="${ec50Y}" stroke="#38bdf8" stroke-dasharray="2,2"/>
+        <circle cx="${ec50X}" cy="${ec50Y}" r="4" fill="#38bdf8"/>
+        <text x="${ec50X}" y="${ec50Y - 6}" fill="#38bdf8" font-size="9" font-weight="bold" text-anchor="middle">EC50</text>
+
+        <!-- Target EC_F Crosshair -->
+        <line x1="${targetX}" y1="${targetY}" x2="${targetX}" y2="150" stroke="#f59e0b" stroke-dasharray="2,2"/>
+        <circle cx="${targetX}" cy="${targetY}" r="4.5" fill="#f59e0b"/>
+        <text x="${targetX}" y="${targetY - 6}" fill="#fbbf24" font-size="9" font-weight="bold" text-anchor="middle">EC${targetF}</text>
+
+        <!-- X Axis labels -->
+        <text x="35" y="165" fill="#64748b" font-size="8">log ${minLog.toFixed(1)}</text>
+        <text x="207" y="165" fill="#94a3b8" font-size="9" font-weight="bold" text-anchor="middle">Log [Concentration, M]</text>
+        <text x="380" y="165" fill="#64748b" font-size="8" text-anchor="end">log ${maxLog.toFixed(1)}</text>
+      `;
+    }
+
+    // 4. Serial Dilutions
+    function setSerialFold(fold) {
+      document.getElementById('sd-fold').value = fold;
+      calcSerialDilution();
+    }
+
+    function calcSerialDilution() {
+      const rawC0 = parseFloat(document.getElementById('sd-c0').value) || 100;
+      const unitC0 = document.getElementById('sd-c0-unit').value;
+      const fold = parseFloat(document.getElementById('sd-fold').value) || 3;
+      const steps = Math.min(Math.max(parseInt(document.getElementById('sd-steps').value, 10) || 8, 2), 16);
+      const wellVol = parseFloat(document.getElementById('sd-vol').value) || 150;
+
+      const parsedC0 = parseConcentration(rawC0, unitC0);
+      const unitLabel = parsedC0 ? parsedC0.label : unitC0;
+
+      const transferVol = wellVol / fold;
+      const diluentVol = wellVol - transferVol;
+
+      document.getElementById('sd-pipette-recipe').innerHTML = `Add <strong>${diluentVol.toFixed(1)} μL</strong> buffer to wells 2–${steps}. Transfer <strong>${transferVol.toFixed(1)} μL</strong> sequentially.`;
+
+      let tHtml = '';
+      let vizHtml = '';
+      let curr = rawC0;
+
+      for (let i = 1; i <= steps; i++) {
+        const normVal = parsedC0 ? (curr * (parsedC0.val / rawC0)) : curr;
+        const logConc = Math.log10(normVal);
+        const opacity = Math.max(0.15, 1 - (i / steps) * 0.85);
+
+        tHtml += `<tr>
+          <td class="font-bold" style="color: var(--accent-cyan);">C${i}</td>
+          <td class="font-mono font-bold">${fmt(curr, 4)} ${unitLabel}</td>
+          <td class="font-mono" style="color: var(--accent-emerald); font-weight: bold;">${logConc.toFixed(3)}</td>
+          <td style="color: var(--text-muted); font-size: 0.75rem;">1:${Math.pow(fold, i - 1)}</td>
+        </tr>`;
+
+        vizHtml += `<div class="well-item">
+          <span>#${i}</span>
+          <div class="well-circle" style="background: rgba(6, 182, 212, ${opacity});"></div>
+          <span style="font-weight: 700; color: #38bdf8;">${fmt(curr, 3)}</span>
+        </div>`;
+
+        curr = curr / fold;
+      }
+
+      document.getElementById('sd-table-rows').innerHTML = tHtml;
+      document.getElementById('sd-plate-viz').innerHTML = vizHtml;
+    }
+
+    // 5. In Vivo Animal Formulation
+    function calcInVivo() {
+      const dosage = parseFloat(document.getElementById('iv-dosage').value) || 10;
+      const weightG = parseFloat(document.getElementById('iv-weight').value) || 25;
+      const dosingVolUL = parseFloat(document.getElementById('iv-dosing-vol').value) || 100;
+      const numAnimals = parseInt(document.getElementById('iv-animals').value, 10) || 6;
+
+      const dmsoPct = parseFloat(document.getElementById('iv-dmso-pct').value) || 5;
+      const pegPct = parseFloat(document.getElementById('iv-peg-pct').value) || 40;
+      const tweenPct = parseFloat(document.getElementById('iv-tween-pct').value) || 5;
+      
+      const waterPct = Math.max(0, 100 - dmsoPct - pegPct - tweenPct);
+      document.getElementById('iv-water-pct').value = waterPct;
+
+      const dosePerAnimalMg = dosage * (weightG / 1000);
+      const workingConcMgML = dosePerAnimalMg / (dosingVolUL / 1000);
+
+      const totalVolUL = numAnimals * dosingVolUL;
+      const totalDrugMg = workingConcMgML * (totalVolUL / 1000);
+
+      const dmsoUL = (totalVolUL * dmsoPct) / 100;
+      const pegUL = (totalVolUL * pegPct) / 100;
+      const tweenUL = (totalVolUL * tweenPct) / 100;
+      const waterUL = (totalVolUL * waterPct) / 100;
+
+      const masterConcMgML = dmsoUL > 0 ? totalDrugMg / (dmsoUL / 1000) : 0;
+
+      document.getElementById('iv-working-conc').innerText = `${workingConcMgML.toFixed(3)} mg/mL`;
+      document.getElementById('iv-total-drug').innerText = `${totalDrugMg.toFixed(2)} mg`;
+      document.getElementById('iv-total-vol').innerText = `${totalVolUL.toFixed(0)} μL`;
+
+      document.getElementById('iv-master-text').innerHTML = `Pre-dissolve <strong>${totalDrugMg.toFixed(2)} mg</strong> drug in <strong>${dmsoUL.toFixed(1)} μL</strong> 100% DMSO (Master Conc: <strong>${masterConcMgML.toFixed(2)} mg/mL</strong>). Sonicate until completely clear.`;
+
+      document.getElementById('iv-sop-list').innerHTML = `
+        <li>Take <strong>${dmsoUL.toFixed(1)} μL</strong> of prepared DMSO Master Liquid.</li>
+        <li>Add <strong>${pegUL.toFixed(1)} μL</strong> PEG300, vortex until clear.</li>
+        <li>Add <strong>${tweenUL.toFixed(1)} μL</strong> Tween 80, mix thoroughly.</li>
+        <li>SLOWLY add <strong>${waterUL.toFixed(1)} μL</strong> Saline / ddH2O dropwise while vortexing.</li>
+      `;
+    }
+
+    // 6. Chemical Formula Parser
+    function setFormulaPreset(f) {
+      document.getElementById('chem-formula-input').value = f;
+      parseFormulaLive();
+    }
+
+    function parseFormulaLive() {
+      const formula = document.getElementById('chem-formula-input').value.trim().replace(/\s+/g, '');
+      if (!formula) return;
+
+      const parts = formula.split(/[\*\·\.]/);
+      let totalWeight = 0;
+      let elementCounts = {};
+
+      try {
+        for (let part of parts) {
+          if (!part) continue;
+          let multiplier = 1;
+          const matchMult = part.match(/^(\d+)(.*)$/);
+          if (matchMult) {
+            multiplier = parseInt(matchMult[1], 10);
+            part = matchMult[2];
+          }
+
+          function parseGroup(str) {
+            const counts = {};
+            let stack = [counts];
+            let i = 0;
+            while (i < str.length) {
+              if (str[i] === '(' || str[i] === '[' || str[i] === '{') {
+                stack.push({});
+                i++;
+              } else if (str[i] === ')' || str[i] === ']' || str[i] === '}') {
+                const top = stack.pop();
+                i++;
+                let numStr = '';
+                while (i < str.length && /\d/.test(str[i])) { numStr += str[i]; i++; }
+                const mult = numStr ? parseInt(numStr, 10) : 1;
+                const target = stack[stack.length - 1];
+                for (let e in top) { target[e] = (target[e] || 0) + top[e] * mult; }
+              } else {
+                const match = str.slice(i).match(/^([A-Z][a-z]?)(\d*)/);
+                if (!match) throw new Error('Invalid symbol');
+                const elem = match[1];
+                const num = match[2] ? parseInt(match[2], 10) : 1;
+                if (!ATOMIC_WEIGHTS[elem]) throw new Error('Unknown element: ' + elem);
+                const target = stack[stack.length - 1];
+                target[elem] = (target[elem] || 0) + num;
+                i += match[0].length;
+              }
+            }
+            return counts;
+          }
+
+          const pCounts = parseGroup(part);
+          for (let e in pCounts) {
+            const count = pCounts[e] * multiplier;
+            elementCounts[e] = (elementCounts[e] || 0) + count;
+            totalWeight += ATOMIC_WEIGHTS[e] * count;
+          }
+        }
+
+        document.getElementById('formula-mw-val').innerText = `${totalWeight.toFixed(4)} g/mol`;
+
+        let bHtml = '';
+        for (let e in elementCounts) {
+          const mass = elementCounts[e] * ATOMIC_WEIGHTS[e];
+          const pct = (mass / totalWeight) * 100;
+          bHtml += `<tr>
+            <td class="font-bold">${e}</td>
+            <td class="font-mono">${elementCounts[e]}</td>
+            <td class="font-mono">${mass.toFixed(3)}</td>
+            <td class="font-mono font-bold" style="color: var(--primary);">${pct.toFixed(2)}%</td>
+          </tr>`;
+        }
+        document.getElementById('formula-breakdown-body').innerHTML = bHtml;
+
+      } catch (err) {
+        document.getElementById('formula-mw-val').innerText = "Invalid formula";
+      }
+    }
+
+    // 7. Buffer Recipes with Dynamic Volume Scaling
+    function updateBufferVolumeUI(volL) {
+      document.getElementById('buf-vol').value = volL;
+      
+      const mlVal = (volL * 1000);
+      let formattedText = '';
+      if (volL < 1.0) {
+        formattedText = `${mlVal.toFixed(0)} mL (${volL.toFixed(2)} L)`;
+      } else {
+        formattedText = `${volL.toFixed(2)} L (${mlVal.toFixed(0)} mL)`;
+      }
+      document.getElementById('buf-vol-text').innerText = formattedText;
+      document.getElementById('buffer-badge-sub').innerText = `Scale: ${formattedText}`;
+
+      // Update preset chips active state
+      document.querySelectorAll('.vol-preset-chip').forEach(chip => {
+        const chipText = chip.innerText.trim();
+        let isMatch = false;
+        if (chipText.includes('100 mL') && Math.abs(volL - 0.1) < 0.001) isMatch = true;
+        if (chipText.includes('250 mL') && Math.abs(volL - 0.25) < 0.001) isMatch = true;
+        if (chipText.includes('500 mL') && Math.abs(volL - 0.5) < 0.001) isMatch = true;
+        if (chipText.includes('1 L') && Math.abs(volL - 1.0) < 0.001) isMatch = true;
+        if (chipText.includes('2 L') && Math.abs(volL - 2.0) < 0.001) isMatch = true;
+        if (chipText.includes('5 L') && Math.abs(volL - 5.0) < 0.001) isMatch = true;
+        if (chipText.includes('10 L') && Math.abs(volL - 10.0) < 0.001) isMatch = true;
+        chip.classList.toggle('active', isMatch);
+      });
+    }
+
+    function setBufferPresetVol(volL) {
+      updateBufferVolumeUI(volL);
+      renderBufferRecipe();
+    }
+
+    function stepBufferVol(delta) {
+      let current = parseFloat(document.getElementById('buf-vol').value) || 1.0;
+      let next = Math.max(0.05, current + delta);
+      next = Math.round(next * 100) / 100;
+      updateBufferVolumeUI(next);
+      renderBufferRecipe();
+    }
+
+    function onBufferVolInput(valStr) {
+      const vol = parseFloat(valStr) || 1.0;
+      updateBufferVolumeUI(vol);
+      renderBufferRecipe();
+    }
+
+    function renderBufferRecipe() {
+      const bufId = document.getElementById('buffer-selector').value;
+      const volL = Math.max(0.01, parseFloat(document.getElementById('buf-vol').value) || 1.0);
+      const buffer = BUFFER_DATA[bufId];
+      if (!buffer) return;
+
+      const totalMl = volL * 1000;
+      const initialH2O = (totalMl * 0.8).toFixed(0);
+
+      document.getElementById('buffer-notes').innerHTML = `
+        <strong>Target Volume:</strong> ${totalMl >= 1000 ? `${volL.toFixed(2)} L (${totalMl.toFixed(0)} mL)` : `${totalMl.toFixed(0)} mL (${volL.toFixed(3)} L)`}<br>
+        <strong>Bench Protocol:</strong> Dissolve reagents in ~${initialH2O} mL ddH₂O (approx 80% volume), adjust pH if required, and bring to final volume of <strong>${totalMl >= 1000 ? `${volL.toFixed(2)} L` : `${totalMl.toFixed(0)} mL`}</strong>. ${buffer.notes}
+      `;
+
+      let html = '';
+      buffer.components.forEach(comp => {
+        let scaledText = '';
+        if (comp.liquidPerL) {
+          const scaledMl = comp.liquidPerL * volL;
+          scaledText = scaledMl >= 1.0 ? `${scaledMl.toFixed(2)} mL` : `${(scaledMl * 1000).toFixed(1)} μL`;
+        } else {
+          const g = comp.targetM * volL * comp.mw;
+          if (g >= 1.0) {
+            scaledText = `${g.toFixed(3)} g`;
+          } else {
+            scaledText = `${(g * 1000).toFixed(2)} mg (${g.toFixed(4)} g)`;
+          }
+        }
+
+        html += `<tr>
+          <td class="font-bold">${comp.name}</td>
+          <td style="color: var(--accent-cyan); font-weight: bold;">${comp.label}</td>
+          <td class="font-mono" style="color: var(--text-muted);">${comp.base1L}</td>
+          <td class="font-mono font-bold" style="color: var(--primary); font-size: 0.9rem;">${scaledText}</td>
+        </tr>`;
+      });
+      document.getElementById('buffer-table-body').innerHTML = html;
+    }
+
+    // Copy helper
+    function copyText(elemId) {
+      const text = document.getElementById(elemId).innerText;
+      navigator.clipboard.writeText(text);
+      alert('Copied to clipboard: ' + text);
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      calcMolarityMass();
+      calcMolarityVol();
+      calcMolarityConc();
+      calcStockDilution();
+      calcMoleGram();
+      calcECAnything();
+      calcSerialDilution();
+      calcInVivo();
+      parseFormulaLive();
+      updateBufferVolumeUI(1.0);
+      renderBufferRecipe();
+    });
+  </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
