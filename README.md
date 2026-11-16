@@ -257,4 +257,4 @@ GitHub Repository: https://github.com/researchhassle/SciCalcStudio
 
 Developed by: Dr Ram Bharti, PhD (https://www.linkedin.com/in/ram-bharti-phd-754921405/)
 
-Built for science. Designed for researchers.
+Built for science. Designed for Researchers.
